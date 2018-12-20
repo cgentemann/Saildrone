@@ -6,3 +6,5 @@ The software here takes 6-hourly files and processes them into a single netcdf f
 Using the single netcdf file, the data is collocated with gridded satelite data. 
 Additionally there is software to create daily images of the Saildrone track superimposed on satellite SSTs. 
 The cruise was sponsored by The Schmidt Family Foundation and Saildrone.
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/cgentemann/Saildrone/master)
