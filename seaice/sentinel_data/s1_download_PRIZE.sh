@@ -1,1 +1,0 @@
-sentinelsat -s 20170601 -e 20170602 -q "producttype=GRD" -u pbjhwang -p Mel0dy3366 -g potential_mooring.geojson
