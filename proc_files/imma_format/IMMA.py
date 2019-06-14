@@ -50,7 +50,7 @@ class IMMA:
                 if( re.search("\S",Length)==None): 
                     Length = None
                 if ( Length != None ):
-            try: 
+                try: 
             Length = int(Length)
                 except:
             Length = decode_base36_m(Length)
