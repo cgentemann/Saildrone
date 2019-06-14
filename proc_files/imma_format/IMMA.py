@@ -50,15 +50,15 @@ class IMMA:
                 if( re.search("\S",Length)==None): 
                     Length = None
                 if ( Length != None ):
-                try: 
-            Length = int(Length)
-                except:
-            Length = decode_base36_m(Length)
+                    try: 
+                        Length = int(Length)
+                    except:
+                        Length = decode_base36_m(Length)
                     if ( Length != 0 ):
                         Length = int(Length)-4
                         line = line[4:len(line)]
-                if(getAttachment(Attachment)==None ):
-                    raise("Bad IMMA string","Unsupported attachment ID "+Attachment)
+                    if(getAttachment(Attachment)==None ):
+                        raise("Bad IMMA string","Unsupported attachment ID "+Attachment)
 
         return 1
 
@@ -189,7 +189,7 @@ def decode_base36_m(t):
     xx.reverse()
     dig10 = 0
     for i,x in enumerate(xx):
-	dig10+=36**i*decode_base36(x)
+        dig10+=36**i*decode_base36(x)
     return dig10
     
 
@@ -732,6 +732,8 @@ definitions['99'] = {
      'ATTE' : (   1,    0.   ,    2.   ,     None,     None, 1.      , 1), # 304
      'SUPD' : (1024,   32.   ,  126.   ,     None,     None,     None, 3), # 305
         }
+
+
 
 
 
