@@ -46,14 +46,14 @@ class IMMA:
             if ( len(line) > 0 ):
                 Attachment = int(line[0:2])
                 Length     = line[2:4]
-		#print Attachment
+                #print Attachment
                 if( re.search("\S",Length)==None): 
                     Length = None
                 if ( Length != None ):
-		    try: 
-			Length = int(Length)
-		    except:
-			Length = decode_base36_m(Length)
+            try: 
+            Length = int(Length)
+                except:
+            Length = decode_base36_m(Length)
                     if ( Length != 0 ):
                         Length = int(Length)-4
                         line = line[4:len(line)]
