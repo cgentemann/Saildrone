@@ -14,7 +14,8 @@ import os
 import jdutil
 
 # change the path to where the program and documents are saved. one level above 
-fpath_default = '/nodc/projects/tsg/zwang/ICOADS/codes'
+fpath_default = '/users/senyastein/Documents/GitHub/Saildrone/proc_files/imma_format'
+#fpath_default = '/nodc/projects/tsg/zwang/ICOADS/codes'
 # change to where the python codes saved
 os.chdir(fpath_default)
 
