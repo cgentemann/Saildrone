@@ -1,0 +1,13 @@
+-name: sailenv
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - jupyter=1.0.0
+  - numpy=1.17.3
+  - pandas=0.25.3
+  - ipyleaflet=0.11.4
+  - python=3.7.3
+  - requests=2.22.0
+  - xarray=0.14.0
+prefix: C:\Users\gentemann\Miniconda3\envs\sailenv
