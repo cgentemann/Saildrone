@@ -312,7 +312,7 @@ def get_filelist_l2p(isat, day_in):
         sat_directory = 'F:/data/sat_data/smap/SSS/L2/RSS/V4/SCI/'
         file_end = '*.nc'
     if isat == 1:  
-        sat_directory = 'F:/data/sat_data/smap/SSS/L2/JPL/V4.2/'
+        sat_directory = 'F:/data/sat_data/smap/SSS/L2/JPL/V4.3/'
         file_end = '*.h5'
         
     syr = str(day_in.dt.year.data)
