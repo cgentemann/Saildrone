@@ -16,12 +16,7 @@ def var_exist(ds,varin):
             return True
     return False
 
-
-def read_all_usv(adir_usv):
-    # this subroutine reads in all the saildrone data for all cruises and normalizes variable names
-    # input directory with files
-    # output dictionary of datasets
-    
+def read_one_usv(adir_usv,ifile_in):
     import xarray as xr
     import numpy as np
     from glob import glob
@@ -56,6 +51,8 @@ def read_all_usv(adir_usv):
     
     #go through each file, read in, normalize and put in dictionary with datasets
     for ifile,file in enumerate(files):
+        if not ifile==ifile_in:
+            continue
         #print(file)
         ds = xr.open_dataset(file)
         ds.close()
@@ -145,12 +142,18 @@ def read_all_usv(adir_usv):
             ie2=99
         ie = int(min([ie1,ie2]))
         ds.attrs['vehicle_id']=name[i+1:i+ie+1]
-              
+    return ds,name
+
+def read_all_usv(adir_usv):
+    # this subroutine reads in all the saildrone data for all cruises and normalizes variable names
+    # input directory with files
+    # output dictionary of datasets
+    for ifile,file in enumerate(files):
+        ds,nameread_one_usv(adir_usv,ifile)
         if ifile==0:
             data_dict = {name:ds}
         else:
             data_dict[name]=ds
-   
     return data_dict
 
 
@@ -170,6 +173,20 @@ def add_coll_vars(data_dict):
         ds['smap_xdim'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
         data_dict[name]=ds
     return data_dict
+
+def add_coll_vars_ds(ds):
+    import xarray as xr
+    import numpy as np
+        # add room to write collocated data information
+    ilen = ds.time.shape[0]
+    ds['deltaT'] = xr.DataArray(np.ones(ilen, dtype='float32')*99999, coords={'time': ds.time}, dims=('time'))
+    ds['smap_SSS'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_iqc_flag'] = xr.DataArray(np.empty(ilen, dtype='int32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_name'] = xr.DataArray(np.empty(ilen, dtype='U125'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_dist'] = xr.DataArray(np.ones(ilen, dtype='float32')*99999, coords={'time': ds.time}, dims=('time'))
+    ds['smap_ydim'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_xdim'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    return ds
 
 
 ###################read OLD******************
