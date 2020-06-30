@@ -145,11 +145,18 @@ def read_one_usv(adir_usv,ifile_in):
     return ds,name
 
 def read_all_usv(adir_usv):
+    from glob import glob
+    
     # this subroutine reads in all the saildrone data for all cruises and normalizes variable names
     # input directory with files
     # output dictionary of datasets
+
+    #get list of all filenames in directory
+    files = [x for x in glob(adir_usv)]
+    print('number of file:',len(files))
+
     for ifile,file in enumerate(files):
-        ds,nameread_one_usv(adir_usv,ifile)
+        ds,name = read_one_usv(adir_usv,ifile)
         if ifile==0:
             data_dict = {name:ds}
         else:
