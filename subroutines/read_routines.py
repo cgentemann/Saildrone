@@ -16,7 +16,7 @@ def var_exist(ds,varin):
             return True
     return False
 
-def read_one_usv(adir_usv,ifile_in):
+def read_one_usv(filein):
     import xarray as xr
     import numpy as np
     from glob import glob
@@ -46,102 +46,102 @@ def read_one_usv(adir_usv,ifile_in):
                'NAV_ROLL':'ROLL_MEAN','NAV_PITCH':'PITCH_MEAN','NAV_YAW':'HDG_MEAN'}
 
     #get list of all filenames in directory
-    files = [x for x in glob(adir_usv)]
-    print('number of file:',len(files))
+    #files = [x for x in glob(adir_usv)]
+    #print('number of file:',len(files))
     
     #go through each file, read in, normalize and put in dictionary with datasets
-    for ifile,file in enumerate(files):
-        if not ifile==ifile_in:
-            continue
+#    for ifile,file in enumerate(files):
+#        if not ifile==ifile_in:
+#            continue
         #print(file)
-        ds = xr.open_dataset(file)
-        ds.close()
-        if any(v=='latitude' for v in ds.coords.keys()):
-            ds = ds.rename({'latitude':'lat','longitude':'lon'})
-        if any(v=='latitude' for v in ds.dims.keys()):
-            ds = ds.rename({'latitude':'lat','longitude':'lon'})
-        if any(v=='latitude' for v in ds):
-            ds = ds.rename({'latitude':'lat','longitude':'lon'})
-        if any(v=='trajectory' for v in ds.dims.keys()):
-            ds = ds.isel(trajectory=0)
-    #    for v in ds.dims.keys():
-        if any(v=='obs' for v in ds.dims.keys()):
-            ds = ds.swap_dims({'obs':'time'})
-        if any(v=='row' for v in ds.dims.keys()):
-            ds = ds.swap_dims({'row':'time'})
-        #remove any duplicates in time, keep only first value
-        _, index = np.unique(ds['time'], return_index=True)
-        ds=ds.isel(time=index)
-        #renames some common variables to uniform name, drop variables not on list above
-        if any(var=='wind_speed' for var in ds):
-            #print(ds.wind_speed.attrs)
-            #saildrone using meterological wind (blowind from) in early cruises
-            #since noaa is calculating from uwnd and vwnd I went to 2019 arctic cruise 1037 and double checked values
-            ds['UWND_MEAN']=-ds.wind_speed*np.sin(np.deg2rad(ds.wind_dir))
-            ds['VWND_MEAN']=-ds.wind_speed*np.cos(np.deg2rad(ds.wind_dir))
+    ds = xr.open_dataset(filein)
+    ds.close()
+    if any(v=='latitude' for v in ds.coords.keys()):
+        ds = ds.rename({'latitude':'lat','longitude':'lon'})
+    if any(v=='latitude' for v in ds.dims.keys()):
+        ds = ds.rename({'latitude':'lat','longitude':'lon'})
+    if any(v=='latitude' for v in ds):
+        ds = ds.rename({'latitude':'lat','longitude':'lon'})
+    if any(v=='trajectory' for v in ds.dims.keys()):
+        ds = ds.isel(trajectory=0)
+#    for v in ds.dims.keys():
+    if any(v=='obs' for v in ds.dims.keys()):
+        ds = ds.swap_dims({'obs':'time'})
+    if any(v=='row' for v in ds.dims.keys()):
+        ds = ds.swap_dims({'row':'time'})
+    #remove any duplicates in time, keep only first value
+    _, index = np.unique(ds['time'], return_index=True)
+    ds=ds.isel(time=index)
+    #renames some common variables to uniform name, drop variables not on list above
+    if any(var=='wind_speed' for var in ds):
+        #print(ds.wind_speed.attrs)
+        #saildrone using meterological wind (blowind from) in early cruises
+        #since noaa is calculating from uwnd and vwnd I went to 2019 arctic cruise 1037 and double checked values
+        ds['UWND_MEAN']=-ds.wind_speed*np.sin(np.deg2rad(ds.wind_dir))
+        ds['VWND_MEAN']=-ds.wind_speed*np.cos(np.deg2rad(ds.wind_dir))
 #            ds.UWND_MEAN.attrs['units']=ds.wind_speed.attrs['units']
 #            ds.VWND_MEAN.attrs['units']=ds.wind_speed.attrs['units']
-            ds.UWND_MEAN.attrs = {'standard_name': 'eastward_wind', 'long_name': 'Eastward wind speed',
-                                  'units': ds.wind_speed.attrs['units'], 'installed_height': '5.2'}
-            ds.VWND_MEAN.attrs = {'standard_name': 'northward_wind', 'long_name': 'Northward wind speed',
-                                  'units': ds.wind_speed.attrs['units'], 'installed_height': '5.2'}
+        ds.UWND_MEAN.attrs = {'standard_name': 'eastward_wind', 'long_name': 'Eastward wind speed',
+                              'units': ds.wind_speed.attrs['units'], 'installed_height': '5.2'}
+        ds.VWND_MEAN.attrs = {'standard_name': 'northward_wind', 'long_name': 'Northward wind speed',
+                              'units': ds.wind_speed.attrs['units'], 'installed_height': '5.2'}
 
-        # SWAP VARIABLE NAMES WHERE POSSIBLE
-        for var in ds:
-            if swapvar.get(var): 
-                if not var_exist(ds,swapvar.get(var)):
-                    ds = ds.rename({var:swapvar.get(var)})
-                    
-        #check that there is a TEMP_CTD_MEAN, if not & temp_rbr_mean there, change it to temp_ctd_mean
-        if not any(var=='TEMP_CTD_MEAN' for var in ds):
-            if any(var=='TEMP_RBR_MEAN' for var in ds):
-                ds = ds.rename({'TEMP_RBR_MEAN':'TEMP_CTD_MEAN'})
-            if any(var=='TEMP_CTD_RBR_MEAN' for var in ds):
-                ds = ds.rename({'TEMP_CTD_RBR_MEAN':'TEMP_CTD_MEAN'})
-        if not any(var=='TEMP_CTD_STDDEV' for var in ds):
-            if any(var=='TEMP_RBR_STDDEV' for var in ds):
-                ds = ds.rename({'TEMP_RBR_STDDEV':'TEMP_CTD_STDDEV'})
-            if any(var=='TEMP_CTD_RBR_STDDEV' for var in ds):
-                ds = ds.rename({'TEMP_CTD_RBR_STDDEV':'TEMP_CTD_STDDEV'})
-        if not any(var=='SAL_CTD_MEAN' for var in ds):
-            if any(var=='SAL_RBR_MEAN' for var in ds):
-                ds = ds.rename({'SAL_RBR_MEAN':'SAL_CTD_MEAN'})
+    # SWAP VARIABLE NAMES WHERE POSSIBLE
+    for var in ds:
+        if swapvar.get(var): 
+            if not var_exist(ds,swapvar.get(var)):
+                ds = ds.rename({var:swapvar.get(var)})
 
-        # DROP VARIABLES NOT LISTED IN LIST_VAR
-        for var in ds:
-            var2 = var
-            if not any(vv==var2 for vv in list_var):
-                ds = ds.drop(var2)               
+    #check that there is a TEMP_CTD_MEAN, if not & temp_rbr_mean there, change it to temp_ctd_mean
+    if not any(var=='TEMP_CTD_MEAN' for var in ds):
+        if any(var=='TEMP_RBR_MEAN' for var in ds):
+            ds = ds.rename({'TEMP_RBR_MEAN':'TEMP_CTD_MEAN'})
+        if any(var=='TEMP_CTD_RBR_MEAN' for var in ds):
+            ds = ds.rename({'TEMP_CTD_RBR_MEAN':'TEMP_CTD_MEAN'})
+    if not any(var=='TEMP_CTD_STDDEV' for var in ds):
+        if any(var=='TEMP_RBR_STDDEV' for var in ds):
+            ds = ds.rename({'TEMP_RBR_STDDEV':'TEMP_CTD_STDDEV'})
+        if any(var=='TEMP_CTD_RBR_STDDEV' for var in ds):
+            ds = ds.rename({'TEMP_CTD_RBR_STDDEV':'TEMP_CTD_STDDEV'})
+    if not any(var=='SAL_CTD_MEAN' for var in ds):
+        if any(var=='SAL_RBR_MEAN' for var in ds):
+            ds = ds.rename({'SAL_RBR_MEAN':'SAL_CTD_MEAN'})
 
-        # if any variable not present in ds, add empty array
-        for var in list_var:
-            if not  var_exist(ds,var):
+    # DROP VARIABLES NOT LISTED IN LIST_VAR
+    for var in ds:
+        var2 = var
+        if not any(vv==var2 for vv in list_var):
+            ds = ds.drop(var2)               
 
-                ilen = ds.time.shape[0]
-                ds[var] = xr.DataArray(np.ones(ilen, dtype='float32')*99999, coords={'time': ds.time}, dims=('time'))     
-        
-        #some of the noaa tpos data attributes aren't formatted correctly, model number is just saildrone
-        if (str(ds.TEMP_CTD_MEAN.attrs.get('model_name'))=='Saildrone^3') and (ds.TEMP_CTD_MEAN.attrs.get('device_name')):
-            tem= str(ds.TEMP_CTD_MEAN.attrs['device_name']).replace(' ','_').replace('/','_').replace('(','_').replace(')','_')
-            ds.TEMP_CTD_MEAN.attrs['model_name'] = tem
-    
-        name = os.path.basename(file)
-        name = name.replace(" ", "_")
-        name = name.replace("/", "_")
-        name = name[:-3]
-        print(ifile,name)
-        
-           #vehicle 
-        i=name.find('-sd')
-        if i==-1:
-            i=name.find('_sd')
-        ie1,ie2 = name[i+1:].find('_'),name[i+1:].find('-')
-        if ie1<0:
-            ie1=99
-        if ie2<0:
-            ie2=99
-        ie = int(min([ie1,ie2]))
-        ds.attrs['vehicle_id']=name[i+1:i+ie+1]
+    # if any variable not present in ds, add empty array
+    for var in list_var:
+        if not  var_exist(ds,var):
+
+            ilen = ds.time.shape[0]
+            ds[var] = xr.DataArray(np.ones(ilen, dtype='float32')*99999, coords={'time': ds.time}, dims=('time'))     
+
+    #some of the noaa tpos data attributes aren't formatted correctly, model number is just saildrone
+    if (str(ds.TEMP_CTD_MEAN.attrs.get('model_name'))=='Saildrone^3') and (ds.TEMP_CTD_MEAN.attrs.get('device_name')):
+        tem= str(ds.TEMP_CTD_MEAN.attrs['device_name']).replace(' ','_').replace('/','_').replace('(','_').replace(')','_')
+        ds.TEMP_CTD_MEAN.attrs['model_name'] = tem
+
+    name = os.path.basename(filein)
+    name = name.replace(" ", "_")
+    name = name.replace("/", "_")
+    name = name[:-3]
+#    print(ifile,name)
+
+       #vehicle 
+    i=name.find('-sd')
+    if i==-1:
+        i=name.find('_sd')
+    ie1,ie2 = name[i+1:].find('_'),name[i+1:].find('-')
+    if ie1<0:
+        ie1=99
+    if ie2<0:
+        ie2=99
+    ie = int(min([ie1,ie2]))
+    ds.attrs['vehicle_id']=name[i+1:i+ie+1]
     return ds,name
 
 def read_all_usv(adir_usv):
@@ -194,6 +194,73 @@ def add_coll_vars_ds(ds):
     ds['smap_ydim'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
     ds['smap_xdim'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
     return ds
+
+
+def add_den_usv(ds):
+    import seawater as sw
+    import numpy as np
+    import xarray as xr
+    ds['wspd']=np.sqrt(ds.UWND_MEAN**2+ds.VWND_MEAN**2)   
+    tem=sw.dens0(ds.SAL_CTD_MEAN,ds.TEMP_CTD_MEAN)
+    ds['density_mean']=xr.DataArray(tem,dims=('time'),coords={'time':ds.time})
+    tem=sw.alpha(ds.SAL_CTD_MEAN,ds.TEMP_CTD_MEAN,ds.BARO_PRES_MEAN*0) #pressure =0 at surface
+    ds['alpha_ME']=xr.DataArray(tem,dims=('time'),coords={'time':ds.time})
+    tem=sw.beta(ds.SAL_CTD_MEAN,ds.TEMP_CTD_MEAN,ds.BARO_PRES_MEAN*0) #pressure =0 at surface
+    ds['beta_MEAN']=xr.DataArray(tem,dims=('time'),coords={'time':ds.time})
+    xlat=ds.lat
+    xlon=ds.lon
+    dkm2 = abs(np.abs((((xlon[1:].data-xlon[0:-1].data)**2+(xlat[1:].data-xlat[0:-1].data)**2)**.5)*110.567*np.cos(np.pi*xlat[1:].data/180)))
+    dkm2=np.append(dkm2,dkm2[len(dkm2)-1]) #add on last point
+    dkm3 = dkm2.cumsum()
+    ds['dist_total']=xr.DataArray(dkm3,dims=('time'),coords={'time':ds.time})
+    ds['dist_between']=xr.DataArray(dkm2,dims=('time'),coords={'time':ds.time})
+    return ds
+
+def add_flux_usv(ds,jcool):
+    from coare3 import coare3
+    from gravity_constant import grv 
+    import numpy as np
+    import xarray as xr
+    
+    #jcool 1 = add cool skin and dw, 0 no cool skin
+
+    #calcalate 10 m wind
+    WS_height = 5.2  #saildrone height obs
+    Ta_height = 2.4
+    Rs_mean = 312   #from eyeballing 1037 data
+    Rl_mean = 300  #from eyeballing 1037 data
+    tem = ds #.isel(trajectory=i)   
+    cond = (np.isfinite(tem.wspd) & np.isfinite(tem.TEMP_AIR_MEAN) \
+            & np.isfinite(tem.RH_MEAN) & np.isfinite(tem.BARO_PRES_MEAN) \
+            & np.isfinite(tem.TEMP_CTD_MEAN) \
+            & np.isfinite(tem.lat))                                                                            
+#    ds2=tem.where(cond,drop=True)
+#    print(ds2.dims)        
+    inputs = {'u':ds.wspd,
+              't':ds.TEMP_AIR_MEAN,
+              'rh':ds.RH_MEAN,
+              'P':ds.BARO_PRES_MEAN,
+              'ts':ds.TEMP_CTD_MEAN,
+              'lat':ds.lat,
+             'zt':Ta_height,
+             'zu':WS_height,
+             'Rl':Rl_mean,
+             'Rs':Rs_mean,
+             'jcool':jcool}
+    res = coare3(inputs)
+    ds['sensible_heat_flux_v3']=xr.DataArray(res['hsb'][0,:].data,coords=[ds.time],dims=['time'],
+                                           attrs={'long_name':'sensible heat flux into ocean','units':'W/m^2'})
+    ds['latent_heat_flux_v3']=xr.DataArray(res['hlb'][0,:].data,coords=[ds.time],dims=['time'],
+                                           attrs={'long_name':'latent heat flux into ocean','units':'W/m^2'})
+    ds['cool_skin_v3']=xr.DataArray(res['dter'][0,:].data,coords=[ds.time],dims=['time'],
+                                           attrs={'long_name':'cool-skin temperature depression','units':'degC'})
+    ds['skin_thickness_v3']=xr.DataArray(res['tkt'][0,:].data,coords=[ds.time],dims=['time'],
+                                           attrs={'long_name':'cool-skin thickness','units':'m'})
+
+    
+    return ds
+
+
 
 
 ###################read OLD******************
