@@ -156,7 +156,7 @@ def read_all_usv(adir_usv):
     print('number of file:',len(files))
 
     for ifile,file in enumerate(files):
-        ds,name = read_one_usv(adir_usv,ifile)
+        ds,name = read_one_usv(file)
         if ifile==0:
             data_dict = {name:ds}
         else:
