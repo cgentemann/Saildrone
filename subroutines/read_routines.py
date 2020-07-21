@@ -181,13 +181,32 @@ def add_coll_vars(data_dict):
         data_dict[name]=ds
     return data_dict
 
-def add_coll_vars_ds(ds):
+def add_coll_vars_ds_jpl(ds):
     import xarray as xr
     import numpy as np
         # add room to write collocated data information
     ilen = ds.time.shape[0]
     ds['deltaT'] = xr.DataArray(np.ones(ilen, dtype='float32')*99999, coords={'time': ds.time}, dims=('time'))
     ds['smap_SSS'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_fland'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_fice'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_iqc_flag'] = xr.DataArray(np.empty(ilen, dtype='uint16'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_name'] = xr.DataArray(np.empty(ilen, dtype='U125'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_dist'] = xr.DataArray(np.ones(ilen, dtype='float32')*99999, coords={'time': ds.time}, dims=('time'))
+    ds['smap_ydim'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_xdim'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    return ds
+
+def add_coll_vars_ds_rss(ds):
+    import xarray as xr
+    import numpy as np
+        # add room to write collocated data information
+    ilen = ds.time.shape[0]
+    ds['deltaT'] = xr.DataArray(np.ones(ilen, dtype='float32')*99999, coords={'time': ds.time}, dims=('time'))
+    ds['smap_SSS'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_SSS_40km'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_fland'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_fice'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
     ds['smap_iqc_flag'] = xr.DataArray(np.empty(ilen, dtype='int32'), coords={'time': ds.time}, dims=('time'))
     ds['smap_name'] = xr.DataArray(np.empty(ilen, dtype='U125'), coords={'time': ds.time}, dims=('time'))
     ds['smap_dist'] = xr.DataArray(np.ones(ilen, dtype='float32')*99999, coords={'time': ds.time}, dims=('time'))
