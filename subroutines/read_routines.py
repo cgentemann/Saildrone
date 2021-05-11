@@ -27,7 +27,7 @@ def read_one_usv(filein):
                 'UWND_MEAN','VWND_MEAN','WWND_MEAN','GUST_WND_MEAN','TEMP_AIR_MEAN','RH_MEAN','BARO_PRES_MEAN',
                 'PAR_AIR_MEAN','TEMP_CTD_MEAN','SAL_CTD_MEAN','TEMP_RBR_MEAN','SAL_RBR_MEAN',
                 'TEMP_O2_RBR_MEAN','CDOM_MEAN','CHLOR_MEAN','CHLOR_WETLABS_MEAN','WIND_MEASUREMENT_HEIGHT_MEAN',
-               'TEMP_CTD_STDDEV']
+               'TEMP_CTD_STDDEV','trajectory']
     
     #list names of variables to swap to common names
     swapvar = {'TEMP_SBE37_MEAN':'TEMP_CTD_MEAN',
@@ -142,6 +142,9 @@ def read_one_usv(filein):
         ie2=99
     ie = int(min([ie1,ie2]))
     ds.attrs['vehicle_id']=name[i+1:i+ie+1]
+    if ds.trajectory.size>1:
+        ds['trajectory']=ds.trajectory[0]
+    ds = ds.reset_coords().set_coords('trajectory')
     return ds,name
 
 def read_all_usv(adir_usv):
@@ -215,6 +218,47 @@ def add_coll_vars_ds_rss(ds):
     ds['smap_xdim'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
     ds['smap_rev_number'] = xr.DataArray(np.empty(ilen, dtype='int32'), coords={'time': ds.time}, dims=('time'))
     return ds
+
+def add_coll_vars_ds_rss(ds):
+    import xarray as xr
+    import numpy as np
+        # add room to write collocated data information
+    ilen = ds.time.shape[0]
+    ds['deltaT'] = xr.DataArray(np.ones(ilen, dtype='float32')*99999, coords={'time': ds.time}, dims=('time'))
+    ds['smap_SSS'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_SSS_40km'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_fland'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_fice'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_iqc_flag'] = xr.DataArray(np.empty(ilen, dtype='int32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_name'] = xr.DataArray(np.empty(ilen, dtype='U125'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_dist'] = xr.DataArray(np.ones(ilen, dtype='float32')*99999, coords={'time': ds.time}, dims=('time'))
+    ds['smap_ydim'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_xdim'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_rev_number'] = xr.DataArray(np.empty(ilen, dtype='int32'), coords={'time': ds.time}, dims=('time'))
+    return ds
+
+def add_coll_vars_ds_jplrss(ds):
+    import xarray as xr
+    import numpy as np
+        # add room to write collocated data information
+    ilen = ds.time.shape[0]
+    ds['deltaT'] = xr.DataArray(np.ones(ilen, dtype='float32')*99999, coords={'time': ds.time}, dims=('time'))
+    ds['smap_SSS_jpl'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_fland_jpl'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_fice_jpl'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_iqc_flag_jpl'] = xr.DataArray(np.empty(ilen, dtype='uint16'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_name_jpl'] = xr.DataArray(np.empty(ilen, dtype='U125'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_dist_jpl'] = xr.DataArray(np.ones(ilen, dtype='float32')*99999, coords={'time': ds.time}, dims=('time'))
+    ds['smap_ydim_jpl'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_xdim_jpl'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_rev_number_jpl'] = xr.DataArray(np.empty(ilen, dtype='int32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_SSS_rss'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_SSS_rss_40km'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_fland_rss'] = xr.DataArray(np.empty(ilen, dtype='float32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_fice_rss'] = xr.DataArray(np.empty(ilen, dtype='int32'), coords={'time': ds.time}, dims=('time'))
+    ds['smap_iqc_flag_rss'] = xr.DataArray(np.empty(ilen, dtype='int32'), coords={'time': ds.time}, dims=('time'))
+    return ds
+
 
 
 def add_den_usv(ds):
